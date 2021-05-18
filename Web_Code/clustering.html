@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Jobs Clusters in the UK</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
+</head>
+<body>
+<div id="map"></div>
+<div class='map-overlay' id='features'><h2>Cluster Jobs Data, UK</h2><div id='pd'><p>Scroll the mouse!</p></div></div>
+<div class='map-overlay' id='legend'><p>Number of Jobs (thousand)</p></div>
+<div class='map-overlay' id='note'><h2>Note:</h2><div id='pd'><p>Black Figure: number of data points nearby</p></div><div id='pd'><p>White Figure: number of jobs</p></div>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+
+h2,
+h3 {
+  margin: 10px;
+  font-size: 1.2em;
+}
+
+h3 {
+  font-size: 1em;
+}
+
+p {
+  font-size: 1em;
+  margin: 10px;
+  text-align: left;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.map-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  margin-right: 20px;
+  font-family: Arial, sans-serif;
+  overflow: auto;
+  border-radius: 3px;
+}
+
+#features {
+  top: 0;
+  height: 80px;
+  margin-top: 20px;
+  width: 250px;
+}
+
+#note {
+  margin-bottom: 20px;
+  height: 110px;
+  width: 350px;
+}
+
+#legend {
+  padding: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  line-height: 18px;
+  height: 170px;
+  margin-bottom: 140px;
+  width: 160px;
+}
+
+.legend-key {
+  display: inline-block;
+  border-radius: 20%;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+}；
+</style>
+
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoidWNmbnhodSIsImEiOiJja29saDV0aWswZmwwMnBwZXE2dm5raW11In0.E0TdZdfo1bBaAF9-5CjNUg';
+var map = new mapboxgl.Map({
+container: 'map',
+zoom: 5,
+center: [-1,54.8],
+style: 'mapbox://styles/mapbox/dark-v10'
+});
+ 
+map.addControl(new mapboxgl.NavigationControl());
+ 
+// filters for classifying num_of_jobss into five categories based on magnitude
+var job1 = ['<', ['get', 'jobNum'], 50];
+var job2 = ['all', ['>=', ['get', 'jobNum'], 50], ['<', ['get', 'jobNum'], 100]];
+var job3 = ['all', ['>=', ['get', 'jobNum'], 100], ['<', ['get', 'jobNum'], 200]];
+var job4 = ['all', ['>=', ['get', 'jobNum'], 200], ['<', ['get', 'jobNum'], 400]];
+var job5 = ['>=', ['get', 'jobNum'], 400];
+ 
+// colors to use for the categories
+var colors = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
+var layers = ['<50k', '50k-100k', '100k-200k', '200k-400k', '>400k'];
+ 
+map.on('load', function () {
+
+map.addSource('num_of_jobs', {
+type: 'geojson',
+data: {
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000001", "CTYUA20NM": "Hartlepool", "LONG": -1.27018, "LAT": 54.67614, "jobNum": 29 }, "geometry": { "type": "Point", "coordinates": [ -1.259380429564148, 54.669367522191344 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000002", "CTYUA20NM": "Middlesbrough", "LONG": -1.21099, "LAT": 54.54467, "jobNum": 41 }, "geometry": { "type": "Point", "coordinates": [ -1.22224157510629, 54.541919075812821 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000003", "CTYUA20NM": "Redcar and Cleveland", "LONG": -1.00608, "LAT": 54.56752, "jobNum": 37 }, "geometry": { "type": "Point", "coordinates": [ -1.020659636730906, 54.551566009855627 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000004", "CTYUA20NM": "Stockton-on-Tees", "LONG": -1.30664, "LAT": 54.55691, "jobNum": 65 }, "geometry": { "type": "Point", "coordinates": [ -1.33226201127109, 54.561528688521008 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000005", "CTYUA20NM": "Darlington", "LONG": -1.56835, "LAT": 54.53534, "jobNum": 35 }, "geometry": { "type": "Point", "coordinates": [ -1.552613298087794, 54.548620742231016 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000006", "CTYUA20NM": "Halton", "LONG": -2.68853, "LAT": 53.33424, "jobNum": 44 }, "geometry": { "type": "Point", "coordinates": [ -2.712212464047412, 53.34502512450166 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000007", "CTYUA20NM": "Warrington", "LONG": -2.56167, "LAT": 53.39163, "jobNum": 79 }, "geometry": { "type": "Point", "coordinates": [ -2.562778610934705, 53.399003187277899 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000008", "CTYUA20NM": "Blackburn with Darwen", "LONG": -2.4636, "LAT": 53.7008, "jobNum": 44 }, "geometry": { "type": "Point", "coordinates": [ -2.467590155970367, 53.692543218799514 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000009", "CTYUA20NM": "Blackpool", "LONG": -3.02199, "LAT": 53.82164, "jobNum": 40 }, "geometry": { "type": "Point", "coordinates": [ -3.029259614264516, 53.817701625940821 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000010", "CTYUA20NM": "Kingston upon Hull, City of", "LONG": -0.30382, "LAT": 53.7692, "jobNum": 94 }, "geometry": { "type": "Point", "coordinates": [ -0.334823601651328, 53.763955867486608 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000011", "CTYUA20NM": "East Riding of Yorkshire", "LONG": -0.66195, "LAT": 53.88112, "jobNum": 130 }, "geometry": { "type": "Point", "coordinates": [ -0.492410564368315, 53.874530148792005 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000012", "CTYUA20NM": "North East Lincolnshire", "LONG": -0.13911, "LAT": 53.52327, "jobNum": 48 }, "geometry": { "type": "Point", "coordinates": [ -0.137922481789403, 53.542524264031726 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000013", "CTYUA20NM": "North Lincolnshire", "LONG": -0.52407, "LAT": 53.58643, "jobNum": 56 }, "geometry": { "type": "Point", "coordinates": [ -0.593645009089594, 53.590710290732794 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000014", "CTYUA20NM": "York", "LONG": -1.07375, "LAT": 53.96582, "jobNum": 68 }, "geometry": { "type": "Point", "coordinates": [ -1.061429128344847, 53.958667641398463 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000015", "CTYUA20NM": "Derby", "LONG": -1.47189, "LAT": 52.91464, "jobNum": 80 }, "geometry": { "type": "Point", "coordinates": [ -1.468341185721291, 52.912431619511871 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000016", "CTYUA20NM": "Leicester", "LONG": -1.1304, "LAT": 52.63592, "jobNum": 90 }, "geometry": { "type": "Point", "coordinates": [ -1.128475028193801, 52.637795444933488 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000017", "CTYUA20NM": "Rutland", "LONG": -0.6263, "LAT": 52.66765, "jobNum": 13 }, "geometry": { "type": "Point", "coordinates": [ -0.654631525614794, 52.660626494337222 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000018", "CTYUA20NM": "Nottingham", "LONG": -1.16667, "LAT": 52.95419, "jobNum": 79 }, "geometry": { "type": "Point", "coordinates": [ -1.176512187420052, 52.960481348299808 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000019", "CTYUA20NM": "Herefordshire, County of", "LONG": -2.73931, "LAT": 52.08154, "jobNum": 60 }, "geometry": { "type": "Point", "coordinates": [ -2.745141243249064, 52.103550659409578 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000020", "CTYUA20NM": "Telford and Wrekin", "LONG": -2.48941, "LAT": 52.71417, "jobNum": 74 }, "geometry": { "type": "Point", "coordinates": [ -2.488801056847516, 52.73010177693358 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000021", "CTYUA20NM": "Stoke-on-Trent", "LONG": -2.15888, "LAT": 53.01707, "jobNum": 89 }, "geometry": { "type": "Point", "coordinates": [ -2.164558203615027, 53.017930046603226 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000022", "CTYUA20NM": "Bath and North East Somerset", "LONG": -2.48654, "LAT": 51.35604, "jobNum": 66 }, "geometry": { "type": "Point", "coordinates": [ -2.475222691222766, 51.355822403322669 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000023", "CTYUA20NM": "Bristol, City of", "LONG": -2.57742, "LAT": 51.47115, "jobNum": 167 }, "geometry": { "type": "Point", "coordinates": [ -2.600502228115801, 51.466661778319704 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000024", "CTYUA20NM": "North Somerset", "LONG": -2.75438, "LAT": 51.39706, "jobNum": 82 }, "geometry": { "type": "Point", "coordinates": [ -2.794154931460398, 51.389642637621506 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000025", "CTYUA20NM": "South Gloucestershire", "LONG": -2.46922, "LAT": 51.54673, "jobNum": 107 }, "geometry": { "type": "Point", "coordinates": [ -2.457546143086487, 51.541783643478787 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000026", "CTYUA20NM": "Plymouth", "LONG": -4.11297, "LAT": 50.40494, "jobNum": 89 }, "geometry": { "type": "Point", "coordinates": [ -4.1182687834083, 50.391816838597123 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000027", "CTYUA20NM": "Torbay", "LONG": -3.55523, "LAT": 50.47092, "jobNum": 44 }, "geometry": { "type": "Point", "coordinates": [ -3.554246301852841, 50.441599022239785 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000030", "CTYUA20NM": "Swindon", "LONG": -1.73367, "LAT": 51.57763, "jobNum": 99 }, "geometry": { "type": "Point", "coordinates": [ -1.743823256660922, 51.571411055770881 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000031", "CTYUA20NM": "Peterborough", "LONG": -0.26874, "LAT": 52.59214, "jobNum": 68 }, "geometry": { "type": "Point", "coordinates": [ -0.253098120445255, 52.608399860960773 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000032", "CTYUA20NM": "Luton", "LONG": -0.42319, "LAT": 51.89102, "jobNum": 55 }, "geometry": { "type": "Point", "coordinates": [ -0.425583240711107, 51.894083870905298 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000033", "CTYUA20NM": "Southend-on-Sea", "LONG": 0.706923, "LAT": 51.54917, "jobNum": 60 }, "geometry": { "type": "Point", "coordinates": [ 0.709491721796132, 51.547594935734132 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000034", "CTYUA20NM": "Thurrock", "LONG": 0.334861, "LAT": 51.50998, "jobNum": 58 }, "geometry": { "type": "Point", "coordinates": [ 0.367993406057936, 51.508942288911278 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000035", "CTYUA20NM": "Medway", "LONG": 0.563174, "LAT": 51.44772, "jobNum": 107 }, "geometry": { "type": "Point", "coordinates": [ 0.554002380647481, 51.415029789911621 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000036", "CTYUA20NM": "Bracknell Forest", "LONG": -0.73363, "LAT": 51.4113, "jobNum": 61 }, "geometry": { "type": "Point", "coordinates": [ -0.73970122713207, 51.407978353356597 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000037", "CTYUA20NM": "West Berkshire", "LONG": -1.27364, "LAT": 51.44559, "jobNum": 70 }, "geometry": { "type": "Point", "coordinates": [ -1.304508756222596, 51.449439160716977 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000038", "CTYUA20NM": "Reading", "LONG": -0.99071, "LAT": 51.45302, "jobNum": 63 }, "geometry": { "type": "Point", "coordinates": [ -0.98382191541725, 51.452833502509201 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000039", "CTYUA20NM": "Slough", "LONG": -0.57617, "LAT": 51.5035, "jobNum": 54 }, "geometry": { "type": "Point", "coordinates": [ -0.586246061254786, 51.508246475949583 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000040", "CTYUA20NM": "Windsor and Maidenhead", "LONG": -0.67541, "LAT": 51.48034, "jobNum": 53 }, "geometry": { "type": "Point", "coordinates": [ -0.699549424989487, 51.485533876137289 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000041", "CTYUA20NM": "Wokingham", "LONG": -0.89935, "LAT": 51.42296, "jobNum": 80 }, "geometry": { "type": "Point", "coordinates": [ -0.883812492207567, 51.429298436640977 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000042", "CTYUA20NM": "Milton Keynes", "LONG": -0.7407, "LAT": 52.07241, "jobNum": 104 }, "geometry": { "type": "Point", "coordinates": [ -0.733504494223161, 52.083715818316527 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000043", "CTYUA20NM": "Brighton and Hove", "LONG": -0.15079, "LAT": 50.8465, "jobNum": 107 }, "geometry": { "type": "Point", "coordinates": [ -0.134065974086904, 50.844436599175381 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000044", "CTYUA20NM": "Portsmouth", "LONG": -1.07006, "LAT": 50.808, "jobNum": 73 }, "geometry": { "type": "Point", "coordinates": [ -1.070120577764651, 50.820537333616237 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000045", "CTYUA20NM": "Southampton", "LONG": -1.39952, "LAT": 50.9212, "jobNum": 97 }, "geometry": { "type": "Point", "coordinates": [ -1.399155367450162, 50.919754998650113 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000046", "CTYUA20NM": "Isle of Wight", "LONG": -1.33366, "LAT": 50.67129, "jobNum": 38 }, "geometry": { "type": "Point", "coordinates": [ -1.297741374781785, 50.674504620945569 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000047", "CTYUA20NM": "County Durham", "LONG": -1.8405, "LAT": 54.68513, "jobNum": 160 }, "geometry": { "type": "Point", "coordinates": [ -1.839810385512866, 54.695301349429329 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000049", "CTYUA20NM": "Cheshire East", "LONG": -2.29299, "LAT": 53.16793, "jobNum": 138 }, "geometry": { "type": "Point", "coordinates": [ -2.349362705965671, 53.180304231451217 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000050", "CTYUA20NM": "Cheshire West and Chester", "LONG": -2.70298, "LAT": 53.16336, "jobNum": 132 }, "geometry": { "type": "Point", "coordinates": [ -2.732789535866011, 53.197683692202439 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000051", "CTYUA20NM": "Shropshire", "LONG": -2.73667, "LAT": 52.62212, "jobNum": 119 }, "geometry": { "type": "Point", "coordinates": [ -2.734161837801924, 52.635285995239663 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000052", "CTYUA20NM": "Cornwall", "LONG": -4.64254, "LAT": 50.45022, "jobNum": 168 }, "geometry": { "type": "Point", "coordinates": [ -4.825052226488097, 50.406543784126612 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000054", "CTYUA20NM": "Wiltshire", "LONG": -1.92661, "LAT": 51.32883, "jobNum": 188 }, "geometry": { "type": "Point", "coordinates": [ -1.944700992250004, 51.297486572186529 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000055", "CTYUA20NM": "Bedford", "LONG": -0.45463, "LAT": 52.19628, "jobNum": 68 }, "geometry": { "type": "Point", "coordinates": [ -0.477079356677511, 52.189089774480948 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000056", "CTYUA20NM": "Central Bedfordshire", "LONG": -0.47754, "LAT": 51.99903, "jobNum": 110 }, "geometry": { "type": "Point", "coordinates": [ -0.435987324782856, 52.006557216143278 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000057", "CTYUA20NM": "Northumberland", "LONG": -2.07523, "LAT": 55.30037, "jobNum": 93 }, "geometry": { "type": "Point", "coordinates": [ -2.068250108209622, 55.239559242472119 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000058", "CTYUA20NM": "Bournemouth, Christchurch and Poole", "LONG": -1.84807, "LAT": 50.74609, "jobNum": 132 }, "geometry": { "type": "Point", "coordinates": [ -1.878952093075402, 50.749408184620165 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000059", "CTYUA20NM": "Dorset", "LONG": -2.41467, "LAT": 50.79697, "jobNum": 121 }, "geometry": { "type": "Point", "coordinates": [ -2.335858589092458, 50.807727410560219 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E06000060", "CTYUA20NM": "Buckinghamshire", "LONG": -0.80569, "LAT": 51.76966, "jobNum": 208 }, "geometry": { "type": "Point", "coordinates": [ -0.812138194657659, 51.785197933738559 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000001", "CTYUA20NM": "Bolton", "LONG": -2.47952, "LAT": 53.58449, "jobNum": 71 }, "geometry": { "type": "Point", "coordinates": [ -2.466981197171573, 53.578529861110077 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000002", "CTYUA20NM": "Bury", "LONG": -2.3088, "LAT": 53.5931, "jobNum": 61 }, "geometry": { "type": "Point", "coordinates": [ -2.31258239039526, 53.587764355451725 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000003", "CTYUA20NM": "Manchester", "LONG": -2.23359, "LAT": 53.47009, "jobNum": 140 }, "geometry": { "type": "Point", "coordinates": [ -2.232478755532286, 53.451432247107938 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000004", "CTYUA20NM": "Oldham", "LONG": -2.05274, "LAT": 53.55768, "jobNum": 71 }, "geometry": { "type": "Point", "coordinates": [ -2.050645324373586, 53.551778990537244 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000005", "CTYUA20NM": "Rochdale", "LONG": -2.14784, "LAT": 53.60741, "jobNum": 67 }, "geometry": { "type": "Point", "coordinates": [ -2.157833186045306, 53.616459952386258 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000006", "CTYUA20NM": "Salford", "LONG": -2.38485, "LAT": 53.47927, "jobNum": 87 }, "geometry": { "type": "Point", "coordinates": [ -2.370168209806494, 53.489436827878748 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000007", "CTYUA20NM": "Stockport", "LONG": -2.12467, "LAT": 53.39116, "jobNum": 107 }, "geometry": { "type": "Point", "coordinates": [ -2.128098083147454, 53.393852770169048 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000008", "CTYUA20NM": "Tameside", "LONG": -2.077, "LAT": 53.47867, "jobNum": 70 }, "geometry": { "type": "Point", "coordinates": [ -2.06280488290649, 53.477371431431763 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000009", "CTYUA20NM": "Trafford", "LONG": -2.36572, "LAT": 53.41671, "jobNum": 80 }, "geometry": { "type": "Point", "coordinates": [ -2.355343858205294, 53.418902924327163 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000010", "CTYUA20NM": "Wigan", "LONG": -2.57247, "LAT": 53.51445, "jobNum": 112 }, "geometry": { "type": "Point", "coordinates": [ -2.589586362563461, 53.524050703087269 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000011", "CTYUA20NM": "Knowsley", "LONG": -2.83297, "LAT": 53.43788, "jobNum": 39 }, "geometry": { "type": "Point", "coordinates": [ -2.834093223262444, 53.425028351024658 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000012", "CTYUA20NM": "Liverpool", "LONG": -2.91364, "LAT": 53.4083, "jobNum": 137 }, "geometry": { "type": "Point", "coordinates": [ -2.916714504387564, 53.403837301526288 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000013", "CTYUA20NM": "St. Helens", "LONG": -2.7031, "LAT": 53.45862, "jobNum": 56 }, "geometry": { "type": "Point", "coordinates": [ -2.723651292060947, 53.459380220753509 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000014", "CTYUA20NM": "Sefton", "LONG": -2.99177, "LAT": 53.4821, "jobNum": 88 }, "geometry": { "type": "Point", "coordinates": [ -3.004565150412058, 53.551028157189116 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000015", "CTYUA20NM": "Wirral", "LONG": -3.06701, "LAT": 53.37478, "jobNum": 113 }, "geometry": { "type": "Point", "coordinates": [ -3.07121597163373, 53.362021573279534 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000016", "CTYUA20NM": "Barnsley", "LONG": -1.54925, "LAT": 53.52577, "jobNum": 76 }, "geometry": { "type": "Point", "coordinates": [ -1.53251021346706, 53.535722194447168 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000017", "CTYUA20NM": "Doncaster", "LONG": -1.10894, "LAT": 53.52697, "jobNum": 96 }, "geometry": { "type": "Point", "coordinates": [ -1.095735275197649, 53.544177173867901 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000018", "CTYUA20NM": "Rotherham", "LONG": -1.28651, "LAT": 53.39553, "jobNum": 81 }, "geometry": { "type": "Point", "coordinates": [ -1.286245133091207, 53.408546549232788 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000019", "CTYUA20NM": "Sheffield", "LONG": -1.54254, "LAT": 53.40358, "jobNum": 156 }, "geometry": { "type": "Point", "coordinates": [ -1.550495708950489, 53.404318056332144 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000021", "CTYUA20NM": "Newcastle upon Tyne", "LONG": -1.65297, "LAT": 55.02101, "jobNum": 71 }, "geometry": { "type": "Point", "coordinates": [ -1.658229774370301, 55.008186977203913 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000022", "CTYUA20NM": "North Tyneside", "LONG": -1.50923, "LAT": 55.02896, "jobNum": 70 }, "geometry": { "type": "Point", "coordinates": [ -1.519319393750917, 55.028333165665146 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000023", "CTYUA20NM": "South Tyneside", "LONG": -1.44679, "LAT": 54.96988, "jobNum": 46 }, "geometry": { "type": "Point", "coordinates": [ -1.444431375810721, 54.962658476040566 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000024", "CTYUA20NM": "Sunderland", "LONG": -1.43344, "LAT": 54.85719, "jobNum": 94 }, "geometry": { "type": "Point", "coordinates": [ -1.452711666596694, 54.87986536080021 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000025", "CTYUA20NM": "Birmingham", "LONG": -1.88141, "LAT": 52.48404, "jobNum": 245 }, "geometry": { "type": "Point", "coordinates": [ -1.87471910856398, 52.488468156419422 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000026", "CTYUA20NM": "Coventry", "LONG": -1.51908, "LAT": 52.41423, "jobNum": 113 }, "geometry": { "type": "Point", "coordinates": [ -1.519751615103725, 52.416741631603671 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000027", "CTYUA20NM": "Dudley", "LONG": -2.10171, "LAT": 52.49513, "jobNum": 109 }, "geometry": { "type": "Point", "coordinates": [ -2.108754258728013, 52.482741389906153 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000028", "CTYUA20NM": "Sandwell", "LONG": -2.00771, "LAT": 52.51477, "jobNum": 96 }, "geometry": { "type": "Point", "coordinates": [ -2.00896797369237, 52.515313375299527 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000029", "CTYUA20NM": "Solihull", "LONG": -1.71558, "LAT": 52.431, "jobNum": 69 }, "geometry": { "type": "Point", "coordinates": [ -1.727075928381142, 52.412996482490641 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000030", "CTYUA20NM": "Walsall", "LONG": -1.97044, "LAT": 52.60503, "jobNum": 79 }, "geometry": { "type": "Point", "coordinates": [ -1.966348035790924, 52.599136459990703 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000031", "CTYUA20NM": "Wolverhampton", "LONG": -2.12746, "LAT": 52.59788, "jobNum": 76 }, "geometry": { "type": "Point", "coordinates": [ -2.121002209005216, 52.589072070656925 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000032", "CTYUA20NM": "Bradford", "LONG": -1.87389, "LAT": 53.84382, "jobNum": 153 }, "geometry": { "type": "Point", "coordinates": [ -1.854727673237588, 53.844603921633471 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000033", "CTYUA20NM": "Calderdale", "LONG": -1.96182, "LAT": 53.72048, "jobNum": 71 }, "geometry": { "type": "Point", "coordinates": [ -1.973453667038451, 53.721079751047746 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000034", "CTYUA20NM": "Kirklees", "LONG": -1.78085, "LAT": 53.64233, "jobNum": 150 }, "geometry": { "type": "Point", "coordinates": [ -1.763198666895034, 53.627279389490958 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000035", "CTYUA20NM": "Leeds", "LONG": -1.50736, "LAT": 53.82273, "jobNum": 281 }, "geometry": { "type": "Point", "coordinates": [ -1.506015636349236, 53.825666924261327 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000036", "CTYUA20NM": "Wakefield", "LONG": -1.42092, "LAT": 53.65922, "jobNum": 120 }, "geometry": { "type": "Point", "coordinates": [ -1.411792414461875, 53.660560471324146 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E08000037", "CTYUA20NM": "Gateshead", "LONG": -1.6868, "LAT": 54.9312, "jobNum": 61 }, "geometry": { "type": "Point", "coordinates": [ -1.683292357263197, 54.934910779067053 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000002", "CTYUA20NM": "Barking and Dagenham", "LONG": 0.129479, "LAT": 51.54555, "jobNum": 44 }, "geometry": { "type": "Point", "coordinates": [ 0.133536713739635, 51.545135863056949 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000003", "CTYUA20NM": "Barnet", "LONG": -0.21819, "LAT": 51.61107, "jobNum": 116 }, "geometry": { "type": "Point", "coordinates": [ -0.209990097269577, 51.615880275666377 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000004", "CTYUA20NM": "Bexley", "LONG": 0.146212, "LAT": 51.45822, "jobNum": 77 }, "geometry": { "type": "Point", "coordinates": [ 0.140376399697441, 51.458655850431903 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000005", "CTYUA20NM": "Brent", "LONG": -0.27568, "LAT": 51.56438, "jobNum": 92 }, "geometry": { "type": "Point", "coordinates": [ -0.267801040748209, 51.558401747813903 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000006", "CTYUA20NM": "Bromley", "LONG": 0.039246, "LAT": 51.37266, "jobNum": 113 }, "geometry": { "type": "Point", "coordinates": [ 0.051542226905808, 51.371842766478736 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000007", "CTYUA20NM": "Camden", "LONG": -0.16291, "LAT": 51.54305, "jobNum": 53 }, "geometry": { "type": "Point", "coordinates": [ -0.157402612409454, 51.546241104683283 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000008", "CTYUA20NM": "Croydon", "LONG": -0.07761, "LAT": 51.36597, "jobNum": 117 }, "geometry": { "type": "Point", "coordinates": [ -0.087139318318688, 51.355183504606188 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000009", "CTYUA20NM": "Ealing", "LONG": -0.3141, "LAT": 51.52442, "jobNum": 114 }, "geometry": { "type": "Point", "coordinates": [ -0.331020166580127, 51.522320059649623 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000010", "CTYUA20NM": "Enfield", "LONG": -0.08144, "LAT": 51.64889, "jobNum": 89 }, "geometry": { "type": "Point", "coordinates": [ -0.08724007312381, 51.650847233367877 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000011", "CTYUA20NM": "Greenwich", "LONG": 0.050093, "LAT": 51.46394, "jobNum": 80 }, "geometry": { "type": "Point", "coordinates": [ 0.056259947248504, 51.472639203207017 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000012", "CTYUA20NM": "Hackney", "LONG": -0.06045, "LAT": 51.55492, "jobNum": 81 }, "geometry": { "type": "Point", "coordinates": [ -0.063297045191375, 51.552118583188268 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000013", "CTYUA20NM": "Hammersmith and Fulham", "LONG": -0.21735, "LAT": 51.48733, "jobNum": 61 }, "geometry": { "type": "Point", "coordinates": [ -0.221263687543056, 51.495790283554157 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000014", "CTYUA20NM": "Haringey", "LONG": -0.1067, "LAT": 51.58771, "jobNum": 77 }, "geometry": { "type": "Point", "coordinates": [ -0.107444880173783, 51.590221632785557 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000015", "CTYUA20NM": "Harrow", "LONG": -0.33598, "LAT": 51.59467, "jobNum": 83 }, "geometry": { "type": "Point", "coordinates": [ -0.341253074733613, 51.597572779671118 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000016", "CTYUA20NM": "Havering", "LONG": 0.235368, "LAT": 51.56519, "jobNum": 77 }, "geometry": { "type": "Point", "coordinates": [ 0.221136379254203, 51.564242413830875 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000017", "CTYUA20NM": "Hillingdon", "LONG": -0.44182, "LAT": 51.53664, "jobNum": 95 }, "geometry": { "type": "Point", "coordinates": [ -0.445641753669123, 51.541362661449675 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000018", "CTYUA20NM": "Hounslow", "LONG": -0.37855, "LAT": 51.46238, "jobNum": 83 }, "geometry": { "type": "Point", "coordinates": [ -0.367056354267869, 51.468226563175669 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000019", "CTYUA20NM": "Islington", "LONG": -0.10989, "LAT": 51.54546, "jobNum": 68 }, "geometry": { "type": "Point", "coordinates": [ -0.110228210146375, 51.548335714403677 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000021", "CTYUA20NM": "Kingston upon Thames", "LONG": -0.28367, "LAT": 51.39296, "jobNum": 61 }, "geometry": { "type": "Point", "coordinates": [ -0.286880464822454, 51.387750567826131 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000022", "CTYUA20NM": "Lambeth", "LONG": -0.11385, "LAT": 51.46445, "jobNum": 97 }, "geometry": { "type": "Point", "coordinates": [ -0.118268509020145, 51.452956468853721 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000023", "CTYUA20NM": "Lewisham", "LONG": -0.01734, "LAT": 51.4423, "jobNum": 90 }, "geometry": { "type": "Point", "coordinates": [ -0.020238252414464, 51.447932709073939 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000024", "CTYUA20NM": "Merton", "LONG": -0.18868, "LAT": 51.41058, "jobNum": 74 }, "geometry": { "type": "Point", "coordinates": [ -0.197237197612049, 51.40979724651379 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000025", "CTYUA20NM": "Newham", "LONG": 0.027261, "LAT": 51.53149, "jobNum": 85 }, "geometry": { "type": "Point", "coordinates": [ 0.036393263962235, 51.528188932411688 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000026", "CTYUA20NM": "Redbridge", "LONG": 0.070085, "LAT": 51.58588, "jobNum": 78 }, "geometry": { "type": "Point", "coordinates": [ 0.075893445295098, 51.585529353393504 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000027", "CTYUA20NM": "Richmond upon Thames", "LONG": -0.28914, "LAT": 51.44035, "jobNum": 70 }, "geometry": { "type": "Point", "coordinates": [ -0.312967115476055, 51.442022919170235 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000028", "CTYUA20NM": "Southwark", "LONG": -0.07308, "LAT": 51.46594, "jobNum": 98 }, "geometry": { "type": "Point", "coordinates": [ -0.074586857121669, 51.473003160543769 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000029", "CTYUA20NM": "Sutton", "LONG": -0.17226, "LAT": 51.35755, "jobNum": 67 }, "geometry": { "type": "Point", "coordinates": [ -0.177551039265346, 51.361933525115589 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000030", "CTYUA20NM": "Tower Hamlets", "LONG": -0.03647, "LAT": 51.51554, "jobNum": 87 }, "geometry": { "type": "Point", "coordinates": [ -0.035584174650018, 51.517024626366648 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000031", "CTYUA20NM": "Waltham Forest", "LONG": -0.0188, "LAT": 51.59461, "jobNum": 82 }, "geometry": { "type": "Point", "coordinates": [ -0.012608874043588, 51.593879102289129 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000032", "CTYUA20NM": "Wandsworth", "LONG": -0.20021, "LAT": 51.4524, "jobNum": 108 }, "geometry": { "type": "Point", "coordinates": [ -0.186426998064192, 51.4511933552347 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E09000033", "CTYUA20NM": "Westminster", "LONG": -0.15295, "LAT": 51.51221, "jobNum": 50 }, "geometry": { "type": "Point", "coordinates": [ -0.161302855607554, 51.513754632658269 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000003", "CTYUA20NM": "Cambridgeshire", "LONG": -0.23506, "LAT": 52.34966, "jobNum": 282 }, "geometry": { "type": "Point", "coordinates": [ 0.033453854025261, 52.339621694035657 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000006", "CTYUA20NM": "Cumbria", "LONG": -2.90213, "LAT": 54.63638, "jobNum": 194 }, "geometry": { "type": "Point", "coordinates": [ -2.899364118378199, 54.590586117498553 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000007", "CTYUA20NM": "Derbyshire", "LONG": -1.6021, "LAT": 53.07858, "jobNum": 266 }, "geometry": { "type": "Point", "coordinates": [ -1.615599670383392, 53.142099658762632 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000008", "CTYUA20NM": "Devon", "LONG": -3.65698, "LAT": 50.72558, "jobNum": 269 }, "geometry": { "type": "Point", "coordinates": [ -3.810475614898583, 50.761433323580356 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000011", "CTYUA20NM": "East Sussex", "LONG": 0.334559, "LAT": 50.93805, "jobNum": 177 }, "geometry": { "type": "Point", "coordinates": [ 0.274893412581932, 50.941893137607764 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000012", "CTYUA20NM": "Essex", "LONG": 0.54106, "LAT": 51.80982, "jobNum": 508 }, "geometry": { "type": "Point", "coordinates": [ 0.559955054438956, 51.811544978797087 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000013", "CTYUA20NM": "Gloucestershire", "LONG": -2.15235, "LAT": 51.81971, "jobNum": 209 }, "geometry": { "type": "Point", "coordinates": [ -2.119192664950666, 51.82740613484399 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000014", "CTYUA20NM": "Hampshire", "LONG": -1.24735, "LAT": 51.04474, "jobNum": 592 }, "geometry": { "type": "Point", "coordinates": [ -1.287957325732962, 51.067889952101545 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000015", "CTYUA20NM": "Hertfordshire", "LONG": -0.27699, "LAT": 51.80879, "jobNum": 386 }, "geometry": { "type": "Point", "coordinates": [ -0.216966833872484, 51.829594113783585 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000016", "CTYUA20NM": "Kent", "LONG": 0.72137, "LAT": 51.19295, "jobNum": 530 }, "geometry": { "type": "Point", "coordinates": [ 0.731646577301246, 51.219265722742371 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000017", "CTYUA20NM": "Lancashire", "LONG": -2.46091, "LAT": 53.86216, "jobNum": 394 }, "geometry": { "type": "Point", "coordinates": [ -2.611447838667105, 53.844603781491536 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000018", "CTYUA20NM": "Leicestershire", "LONG": -1.3779, "LAT": 52.68779, "jobNum": 237 }, "geometry": { "type": "Point", "coordinates": [ -1.113561199991216, 52.667557892306746 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000019", "CTYUA20NM": "Lincolnshire", "LONG": -0.23884, "LAT": 53.11102, "jobNum": 264 }, "geometry": { "type": "Point", "coordinates": [ -0.249457497163538, 53.114779522152688 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000020", "CTYUA20NM": "Norfolk", "LONG": 0.964714, "LAT": 52.67123, "jobNum": 303 }, "geometry": { "type": "Point", "coordinates": [ 0.952897223967289, 52.671092929373138 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000021", "CTYUA20NM": "Northamptonshire", "LONG": -0.86668, "LAT": 52.31105, "jobNum": 270 }, "geometry": { "type": "Point", "coordinates": [ -0.864695009085236, 52.307558445177115 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000023", "CTYUA20NM": "North Yorkshire", "LONG": -1.55032, "LAT": 54.09371, "jobNum": 214 }, "geometry": { "type": "Point", "coordinates": [ -1.419856718881368, 54.190094927281294 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000024", "CTYUA20NM": "Nottinghamshire", "LONG": -1.00656, "LAT": 53.1285, "jobNum": 303 }, "geometry": { "type": "Point", "coordinates": [ -1.006648679100206, 53.133395973768224 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000025", "CTYUA20NM": "Oxfordshire", "LONG": -1.29146, "LAT": 51.77155, "jobNum": 293 }, "geometry": { "type": "Point", "coordinates": [ -1.322323693355498, 51.765623126649949 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000027", "CTYUA20NM": "Somerset", "LONG": -3.29595, "LAT": 51.07182, "jobNum": 200 }, "geometry": { "type": "Point", "coordinates": [ -2.938629932664083, 51.098734351102323 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000028", "CTYUA20NM": "Staffordshire", "LONG": -2.02756, "LAT": 52.9093, "jobNum": 307 }, "geometry": { "type": "Point", "coordinates": [ -2.032300626612301, 52.851850440404654 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000029", "CTYUA20NM": "Suffolk", "LONG": 1.04919, "LAT": 52.25385, "jobNum": 280 }, "geometry": { "type": "Point", "coordinates": [ 1.058814947547098, 52.220663415632302 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000030", "CTYUA20NM": "Surrey", "LONG": -0.33911, "LAT": 51.26803, "jobNum": 433 }, "geometry": { "type": "Point", "coordinates": [ -0.420579888925452, 51.247714052268734 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000031", "CTYUA20NM": "Warwickshire", "LONG": -1.56874, "LAT": 52.17977, "jobNum": 209 }, "geometry": { "type": "Point", "coordinates": [ -1.559545991038005, 52.300506241737473 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000032", "CTYUA20NM": "West Sussex", "LONG": -0.45933, "LAT": 50.95134, "jobNum": 315 }, "geometry": { "type": "Point", "coordinates": [ -0.489743469266726, 50.958126502549938 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "E10000034", "CTYUA20NM": "Worcestershire", "LONG": -2.20935, "LAT": 52.21287, "jobNum": 214 }, "geometry": { "type": "Point", "coordinates": [ -2.16922098453541, 52.223597110505914 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000005", "CTYUA20NM": "Clackmannanshire", "LONG": -3.75316, "LAT": 56.14784, "jobNum": 23 }, "geometry": { "type": "Point", "coordinates": [ -3.740474519320675, 56.15197784648884 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000006", "CTYUA20NM": "Dumfries and Galloway", "LONG": -4.02863, "LAT": 55.09621, "jobNum": 48 }, "geometry": { "type": "Point", "coordinates": [ -3.960703429906928, 55.077077656369269 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000008", "CTYUA20NM": "East Ayrshire", "LONG": -4.29057, "LAT": 55.49674, "jobNum": 47 }, "geometry": { "type": "Point", "coordinates": [ -4.314374662290078, 55.485301256113914 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000010", "CTYUA20NM": "East Lothian", "LONG": -2.72435, "LAT": 55.94207, "jobNum": 42 }, "geometry": { "type": "Point", "coordinates": [ -2.720413590889382, 55.939785097625446 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000011", "CTYUA20NM": "East Renfrewshire", "LONG": -4.3606, "LAT": 55.74868, "jobNum": 33 }, "geometry": { "type": "Point", "coordinates": [ -4.359600348434181, 55.753087696854294 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000013", "CTYUA20NM": "Na h-Eileanan Siar", "LONG": -6.65722, "LAT": 58.19938, "jobNum": 11 }, "geometry": { "type": "Point", "coordinates": [ -6.851665859360485, 57.926528013620135 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000014", "CTYUA20NM": "Falkirk", "LONG": -3.83619, "LAT": 56.00075, "jobNum": 63 }, "geometry": { "type": "Point", "coordinates": [ -3.797964293329281, 55.995121193624385 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000017", "CTYUA20NM": "Highland", "LONG": -4.66103, "LAT": 57.58657, "jobNum": 94 }, "geometry": { "type": "Point", "coordinates": [ -4.759334564653414, 57.57863559777568 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000018", "CTYUA20NM": "Inverclyde", "LONG": -4.75387, "LAT": 55.9003, "jobNum": 25 }, "geometry": { "type": "Point", "coordinates": [ -4.743668105659395, 55.901131331358172 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000019", "CTYUA20NM": "Midlothian", "LONG": -3.11738, "LAT": 55.82111, "jobNum": 45 }, "geometry": { "type": "Point", "coordinates": [ -3.11038501572764, 55.83216156581372 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000020", "CTYUA20NM": "Moray", "LONG": -3.20202, "LAT": 57.4768, "jobNum": 30 }, "geometry": { "type": "Point", "coordinates": [ -3.264966813235017, 57.47425539719157 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000021", "CTYUA20NM": "North Ayrshire", "LONG": -4.7246, "LAT": 55.72789, "jobNum": 49 }, "geometry": { "type": "Point", "coordinates": [ -4.979599360145075, 55.651013511476208 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000023", "CTYUA20NM": "Orkney Islands", "LONG": -2.90025, "LAT": 58.94334, "jobNum": 11 }, "geometry": { "type": "Point", "coordinates": [ -3.047293269684078, 59.024850240855777 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000026", "CTYUA20NM": "Scottish Borders", "LONG": -2.85869, "LAT": 55.52595, "jobNum": 43 }, "geometry": { "type": "Point", "coordinates": [ -2.78817356756893, 55.576183374335358 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000027", "CTYUA20NM": "Shetland Islands", "LONG": -1.37344, "LAT": 60.50495, "jobNum": 11 }, "geometry": { "type": "Point", "coordinates": [ -1.255158953950816, 60.380464916449171 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000028", "CTYUA20NM": "South Ayrshire", "LONG": -4.72899, "LAT": 55.23008, "jobNum": 38 }, "geometry": { "type": "Point", "coordinates": [ -4.688041636760792, 55.26768489903214 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000029", "CTYUA20NM": "South Lanarkshire", "LONG": -3.83272, "LAT": 55.60453, "jobNum": 109 }, "geometry": { "type": "Point", "coordinates": [ -3.811029178285316, 55.612759010048038 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000030", "CTYUA20NM": "Stirling", "LONG": -4.32595, "LAT": 56.24953, "jobNum": 31 }, "geometry": { "type": "Point", "coordinates": [ -4.341471273487109, 56.244393589767121 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000033", "CTYUA20NM": "Aberdeen City", "LONG": -2.20398, "LAT": 57.16697, "jobNum": 72 }, "geometry": { "type": "Point", "coordinates": [ -2.186802512999236, 57.157112664566739 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000034", "CTYUA20NM": "Aberdeenshire", "LONG": -2.79208, "LAT": 57.23469, "jobNum": 96 }, "geometry": { "type": "Point", "coordinates": [ -2.630894327860566, 57.241432882714669 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000035", "CTYUA20NM": "Argyll and Bute", "LONG": -5.22114, "LAT": 56.28944, "jobNum": 30 }, "geometry": { "type": "Point", "coordinates": [ -5.495405960212587, 56.123270048388143 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000036", "CTYUA20NM": "City of Edinburgh", "LONG": -3.27826, "LAT": 55.9112, "jobNum": 167 }, "geometry": { "type": "Point", "coordinates": [ -3.288476868117186, 55.924249539086247 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000038", "CTYUA20NM": "Renfrewshire", "LONG": -4.56834, "LAT": 55.84862, "jobNum": 64 }, "geometry": { "type": "Point", "coordinates": [ -4.543450608301376, 55.845645396913135 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000039", "CTYUA20NM": "West Dunbartonshire", "LONG": -4.52074, "LAT": 56.0014, "jobNum": 33 }, "geometry": { "type": "Point", "coordinates": [ -4.516725990516629, 55.986465693136715 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000040", "CTYUA20NM": "West Lothian", "LONG": -3.60909, "LAT": 55.8992, "jobNum": 66 }, "geometry": { "type": "Point", "coordinates": [ -3.574449817169182, 55.884219331407188 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000041", "CTYUA20NM": "Angus", "LONG": -2.8921, "LAT": 56.72518, "jobNum": 43 }, "geometry": { "type": "Point", "coordinates": [ -2.920563868796942, 56.724841966240014 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000042", "CTYUA20NM": "Dundee City", "LONG": -2.97095, "LAT": 56.4776, "jobNum": 48 }, "geometry": { "type": "Point", "coordinates": [ -2.970487585425581, 56.477936875853821 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000045", "CTYUA20NM": "East Dunbartonshire", "LONG": -4.22417, "LAT": 55.95829, "jobNum": 44 }, "geometry": { "type": "Point", "coordinates": [ -4.225577923548924, 55.955979630315589 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000049", "CTYUA20NM": "Glasgow City", "LONG": -4.21479, "LAT": 55.87649, "jobNum": 213 }, "geometry": { "type": "Point", "coordinates": [ -4.252629790597557, 55.857775117072165 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "S12000050", "CTYUA20NM": "North Lanarkshire", "LONG": -3.9514, "LAT": 55.86814, "jobNum": 122 }, "geometry": { "type": "Point", "coordinates": [ -3.948453746166895, 55.874780795305277 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000001", "CTYUA20NM": "Isle of Anglesey", "LONG": -4.32298, "LAT": 53.27931, "jobNum": 23 }, "geometry": { "type": "Point", "coordinates": [ -4.373948711472909, 53.287036169605756 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000002", "CTYUA20NM": "Gwynedd", "LONG": -3.77715, "LAT": 52.89883, "jobNum": 33 }, "geometry": { "type": "Point", "coordinates": [ -4.021520564686588, 52.892946890581882 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000003", "CTYUA20NM": "Conwy", "LONG": -3.74646, "LAT": 53.14739, "jobNum": 38 }, "geometry": { "type": "Point", "coordinates": [ -3.734536000629418, 53.137875635866116 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000004", "CTYUA20NM": "Denbighshire", "LONG": -3.34761, "LAT": 53.08833, "jobNum": 33 }, "geometry": { "type": "Point", "coordinates": [ -3.353361066241567, 53.089817770448377 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000005", "CTYUA20NM": "Flintshire", "LONG": -3.18248, "LAT": 53.21471, "jobNum": 65 }, "geometry": { "type": "Point", "coordinates": [ -3.159996065829952, 53.208411767105858 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000006", "CTYUA20NM": "Wrexham", "LONG": -2.99203, "LAT": 53.00167, "jobNum": 56 }, "geometry": { "type": "Point", "coordinates": [ -3.017722911023965, 52.990149569236536 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000008", "CTYUA20NM": "Ceredigion", "LONG": -3.94993, "LAT": 52.29795, "jobNum": 25 }, "geometry": { "type": "Point", "coordinates": [ -4.071706714705666, 52.25409347537169 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000009", "CTYUA20NM": "Pembrokeshire", "LONG": -4.90818, "LAT": 51.85513, "jobNum": 41 }, "geometry": { "type": "Point", "coordinates": [ -4.885856389750226, 51.855666116484151 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000010", "CTYUA20NM": "Carmarthenshire", "LONG": -4.2111, "LAT": 51.89495, "jobNum": 62 }, "geometry": { "type": "Point", "coordinates": [ -4.157748930959453, 51.904910142073184 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000011", "CTYUA20NM": "Swansea", "LONG": -3.96723, "LAT": 51.65806, "jobNum": 79 }, "geometry": { "type": "Point", "coordinates": [ -4.05059014584753, 51.643409410267836 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000012", "CTYUA20NM": "Neath Port Talbot", "LONG": -3.74638, "LAT": 51.6445, "jobNum": 55 }, "geometry": { "type": "Point", "coordinates": [ -3.741555077248398, 51.681425989440683 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000013", "CTYUA20NM": "Bridgend", "LONG": -3.61375, "LAT": 51.5606, "jobNum": 47 }, "geometry": { "type": "Point", "coordinates": [ -3.598420561360299, 51.556794707414085 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000014", "CTYUA20NM": "Vale of Glamorgan", "LONG": -3.39801, "LAT": 51.44836, "jobNum": 43 }, "geometry": { "type": "Point", "coordinates": [ -3.39918478053833, 51.445581646560179 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000015", "CTYUA20NM": "Cardiff", "LONG": -3.22209, "LAT": 51.50254, "jobNum": 116 }, "geometry": { "type": "Point", "coordinates": [ -3.203601983401898, 51.509915191934667 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000016", "CTYUA20NM": "Rhondda Cynon Taf", "LONG": -3.41359, "LAT": 51.62185, "jobNum": 79 }, "geometry": { "type": "Point", "coordinates": [ -3.435731258331845, 51.650295384921819 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000018", "CTYUA20NM": "Caerphilly", "LONG": -3.19753, "LAT": 51.65001, "jobNum": 59 }, "geometry": { "type": "Point", "coordinates": [ -3.204997834140037, 51.653185949904547 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000020", "CTYUA20NM": "Torfaen", "LONG": -3.05101, "LAT": 51.69836, "jobNum": 32 }, "geometry": { "type": "Point", "coordinates": [ -3.053499648520426, 51.698493308181888 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000021", "CTYUA20NM": "Monmouthshire", "LONG": -2.9028, "LAT": 51.77827, "jobNum": 30 }, "geometry": { "type": "Point", "coordinates": [ -2.872377304816885, 51.765959039914883 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000022", "CTYUA20NM": "Newport", "LONG": -2.89769, "LAT": 51.58231, "jobNum": 53 }, "geometry": { "type": "Point", "coordinates": [ -2.965883394331569, 51.579210711351394 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000023", "CTYUA20NM": "Powys", "LONG": -3.43531, "LAT": 52.34864, "jobNum": 37 }, "geometry": { "type": "Point", "coordinates": [ -3.40977433149328, 52.325486943593774 ] } },
+{ "type": "Feature", "properties": { "CTYUA20CD": "W06000024", "CTYUA20NM": "Merthyr Tydfil", "LONG": -3.36425, "LAT": 51.74858, "jobNum": 22 }, "geometry": { "type": "Point", "coordinates": [ -3.361150122871818, 51.740837886282343 ] } }
+]
+},
+cluster: true,
+clusterRadius: 80,
+clusterProperties: {
+// keep separate counts for each magnitude category in a cluster
+job1: ['+', ['case', job1, 1, 0]],
+job2: ['+', ['case', job2, 1, 0]],
+job3: ['+', ['case', job3, 1, 0]],
+job4: ['+', ['case', job4, 1, 0]],
+job5: ['+', ['case', job5, 1, 0]]
+}
+});
+// circle and symbol layers for rendering individual num_of_jobss (unclustered points)
+map.addLayer({
+'id': 'jobs_circle',
+'type': 'circle',
+'source': 'num_of_jobs',
+'filter': ['!=', 'cluster', true],
+'paint': {
+'circle-color': [
+'case',
+job1,
+colors[0],
+job2,
+colors[1],
+job3,
+colors[2],
+job4,
+colors[3],
+colors[4]
+],
+'circle-opacity': 0.8,
+'circle-radius': 20
+}
+});
+
+for (i = 0; i < layers.length; i++) {
+  var layer = layers[i];
+  var color = colors[i];
+  var item = document.createElement('div');
+  var key = document.createElement('span');
+  key.className = 'legend-key';
+  key.style.backgroundColor = color;
+
+  var value = document.createElement('span');
+  value.innerHTML = layer;
+  item.appendChild(key);
+  item.appendChild(value);
+  legend.appendChild(item);
+};
+
+map.addLayer({
+'id': 'jobs_label',
+'type': 'symbol',
+'source': 'num_of_jobs',
+'filter': ['!=', 'cluster', true],
+'layout': {
+'text-field': [
+'number-format',
+['get', 'jobNum'],
+{ 'min-fraction-digits': 1, 'max-fraction-digits': 1 }
+],
+'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+'text-size': 10
+},
+'paint': {
+'text-color': [
+'case',
+['<', ['get', 'jobNum'], 3],
+'black',
+'white'
+]
+}
+});
+ 
+// objects for caching and keeping track of HTML marker objects (for performance)
+var markers = {};
+var markersOnScreen = {};
+ 
+function updateMarkers() {
+var newMarkers = {};
+var features = map.querySourceFeatures('num_of_jobs');
+ 
+// for every cluster on the screen, create an HTML marker for it (if we didn't yet),
+// and add it to the map if it's not there already
+for (var i = 0; i < features.length; i++) {
+var coords = features[i].geometry.coordinates;
+var props = features[i].properties;
+if (!props.cluster) continue;
+var id = props.cluster_id;
+ 
+var marker = markers[id];
+if (!marker) {
+var el = createDonutChart(props);
+marker = markers[id] = new mapboxgl.Marker({
+element: el
+}).setLngLat(coords);
+}
+newMarkers[id] = marker;
+ 
+if (!markersOnScreen[id]) marker.addTo(map);
+}
+// for every marker we've added previously, remove those that are no longer visible
+for (id in markersOnScreen) {
+if (!newMarkers[id]) markersOnScreen[id].remove();
+}
+markersOnScreen = newMarkers;
+}
+ 
+// after the GeoJSON data is loaded, update markers on the screen on every frame
+map.on('render', function () {
+if (!map.isSourceLoaded('num_of_jobs')) return;
+updateMarkers();
+});
+});
+ 
+// code for creating an SVG donut chart from feature properties
+function createDonutChart(props) {
+var offsets = [];
+var counts = [
+props.job1,
+props.job2,
+props.job3,
+props.job4,
+props.job5
+];
+var total = 0;
+for (var i = 0; i < counts.length; i++) {
+offsets.push(total);
+total += counts[i];
+}
+var fontSize =
+total >= 1000 ? 22 : total >= 100 ? 20 : total >= 10 ? 18 : 16;
+var r = total >= 1000 ? 50 : total >= 100 ? 32 : total >= 10 ? 24 : 18;
+var r0 = Math.round(r * 0.6);
+var w = r * 2;
+ 
+var html =
+'<div><svg width="' +
+w +
+'" height="' +
+w +
+'" viewbox="0 0 ' +
+w +
+' ' +
+w +
+'" text-anchor="middle" style="font: ' +
+fontSize +
+'px sans-serif; display: block">';
+ 
+for (i = 0; i < counts.length; i++) {
+html += donutSegment(
+offsets[i] / total,
+(offsets[i] + counts[i]) / total,
+r,
+r0,
+colors[i]
+);
+}
+html +=
+'<circle cx="' +
+r +
+'" cy="' +
+r +
+'" r="' +
+r0 +
+'" fill="white" /><text dominant-baseline="central" transform="translate(' +
+r +
+', ' +
+r +
+')">' +
+total.toLocaleString() +
+'</text></svg></div>';
+ 
+var el = document.createElement('div');
+el.innerHTML = html;
+return el.firstChild;
+}
+ 
+function donutSegment(start, end, r, r0, color) {
+if (end - start === 1) end -= 0.00001;
+var a0 = 2 * Math.PI * (start - 0.25);
+var a1 = 2 * Math.PI * (end - 0.25);
+var x0 = Math.cos(a0),
+y0 = Math.sin(a0);
+var x1 = Math.cos(a1),
+y1 = Math.sin(a1);
+var largeArc = end - start > 0.5 ? 1 : 0;
+ 
+return [
+'<path d="M',
+r + r0 * x0,
+r + r0 * y0,
+'L',
+r + r * x0,
+r + r * y0,
+'A',
+r,
+r,
+0,
+largeArc,
+1,
+r + r * x1,
+r + r * y1,
+'L',
+r + r0 * x1,
+r + r0 * y1,
+'A',
+r0,
+r0,
+0,
+largeArc,
+0,
+r + r0 * x0,
+r + r0 * y0,
+'" fill="' + color + '" />'
+].join(' ');
+}
+</script>
+ 
+</body>
+</html>
