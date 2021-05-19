@@ -7,6 +7,4 @@ You can find:
 
 2. our SQL files;
 
-3. our code to handle and analysis data, construct our API and website, etc.; 
-
-4. some of map tools we used.
+3. our code to handle and analysis data, construct our API and website, etc.
